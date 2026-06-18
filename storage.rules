@@ -1,0 +1,32 @@
+// =======================================================
+// AURA STUDIO — FIREBASE STORAGE SECURITY RULES
+// =======================================================
+// هذه القواعد تُلصق في: Firebase Console > Storage > Rules
+// نفس الملاحظة في firestore.rules تنطبق هنا: لا يوجد Firebase Auth
+// حقيقي خلف لوحة التحكم (فقط PIN في الواجهة)، فالكتابة هنا مفتوحة
+// لكل من يستطيع الوصول لملف admin.html ويعرف الرمز 0000.
+// =======================================================
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    match /campaigns/{fileName} {
+      // القراءة عامة (لعرض صور الحملات في المعرض)
+      allow read: if true;
+
+      // الكتابة: نسمح فقط بملفات صور، بحد أقصى 50 ميجابايت
+      // (بدون أي ضغط أو تصغير، حسب طلب الحفاظ على الجودة الأصلية)
+      allow write: if request.resource.size < 50 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+
+      allow delete: if true;
+    }
+
+    // أي مسار آخر غير مصرح به بشكل افتراضي
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
